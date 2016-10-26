@@ -9,6 +9,7 @@ use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\AbstractHandler;
 use Monolog\Handler\BrowserConsoleHandler;
 use Monolog\Handler\ChromePHPHandler;
+use Monolog\Handler\FilterHandler;
 use Monolog\Handler\FirePHPHandler;
 use Monolog\Handler\GelfHandler;
 use Monolog\Handler\RotatingFileHandler;
@@ -158,6 +159,21 @@ class MonologComponent extends Component
             case 'elasticsearch':
             case 'fingers_crossed':
             case 'filter':
+                if (!isset($config['max_level'])) {
+                    throw new InsufficientParametersException();
+                }
+                $config = array_merge(
+                    [
+                        $config['level'],
+                        $config['max_level'],
+                        $config['bubble'],
+                        $config['formatter']
+                    ],
+                    $config
+                );
+                $handler = new StreamHandler(Yii::getAlias($config['path']), $config['level'], $config['bubble']);
+                $handler->setFormatter($config['formatter']);
+                return new FilterHandler($handler, $config['level'], $config['max_level'], $config['bubble']);
             case 'buffer':
             case 'deduplication':
             case 'group':
