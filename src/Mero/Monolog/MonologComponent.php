@@ -5,6 +5,8 @@ namespace Mero\Monolog;
 use Mero\Monolog\Exception\InsufficientParametersException;
 use Mero\Monolog\Exception\InvalidHandlerException;
 use Mero\Monolog\Exception\LoggerNotFoundException;
+use Mero\Monolog\Handler\YiiDbHandler;
+
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\AbstractHandler;
 use Monolog\Handler\BrowserConsoleHandler;
@@ -17,6 +19,7 @@ use Monolog\Handler\StreamHandler;
 use yii\base\Component;
 use Monolog\Logger;
 use Yii;
+use yii\di\Instance;
 
 /**
  * MonologComponent is an component for the Monolog library.
@@ -155,6 +158,26 @@ class MonologComponent extends Component
                 $handler->setFilenameFormat($config['filename_format'], $config['date_format']);
 
                 return $handler;
+            case 'yii_db':
+                if (!isset($config['reference'])) {
+                    throw new InsufficientParametersException("Database config 'reference' has not been set");
+                }
+                $dbInstance = Instance::ensure($config['reference'], '\yii\db\Connection');
+                $config = array_merge(
+                    [
+                        'bubble' => true,
+                        'table' => 'logs',
+                    ],
+                    $config
+                );
+
+                return new YiiDbHandler(
+                    $dbInstance,
+                    $config['table'],
+                    $config['additional_fields'],
+                    $config['level'],
+                    $config['bubble']
+                );
             case 'mongo':
             case 'elasticsearch':
             case 'fingers_crossed':
@@ -198,7 +221,6 @@ class MonologComponent extends Component
             case 'logentries':
             case 'flowdock':
             case 'rollbar':
-
                 return;
         }
     }
