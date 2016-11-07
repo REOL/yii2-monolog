@@ -93,7 +93,7 @@ class YiiDbHandler extends AbstractProcessingHandler
         //Add columns
         if (!empty($addedColumns)) {
             foreach ($addedColumns as $c) {
-                $this->db->createCommand('ALTER TABLE `'.$this->table.'` add `'.$c.'` TEXT NULL DEFAULT NULL;')->execute();
+                $this->db->createCommand('ALTER TABLE `'.$this->table.'` add `'.$c.'` TEXT NULL DEFAULT NULL FIRST;')->execute();
             }
         }
 
@@ -143,10 +143,12 @@ class YiiDbHandler extends AbstractProcessingHandler
         }
 
         //Fill content array with "null" values if not provided
-        $contentArray = $contentArray + array_combine(
-            $this->additionalFields,
-            array_fill(0, count($this->additionalFields), null)
-        );
+        if (!empty($this->additionalFields)) {
+            $contentArray = $contentArray + array_combine(
+                $this->additionalFields,
+                array_fill(0, count($this->additionalFields), null)
+            );
+        }
 
         $this->command->bindValues($contentArray)->execute();
     }

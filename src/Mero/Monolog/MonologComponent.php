@@ -167,17 +167,23 @@ class MonologComponent extends Component
                     [
                         'bubble' => true,
                         'table' => 'logs',
+                        'additional_fields' => [],
                     ],
                     $config
                 );
 
-                return new YiiDbHandler(
+                $dbHandler = new YiiDbHandler(
                     $dbInstance,
                     $config['table'],
                     $config['additional_fields'],
                     $config['level'],
                     $config['bubble']
                 );
+                if (isset($config['formatter'])) {
+                    $dbHandler->setFormatter($config['formatter']);
+                }
+
+                return $dbHandler;
             case 'mongo':
             case 'elasticsearch':
             case 'fingers_crossed':
