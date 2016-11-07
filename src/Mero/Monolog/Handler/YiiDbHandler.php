@@ -138,7 +138,11 @@ class YiiDbHandler extends AbstractProcessingHandler
         // Cleaning up context to keep only accepted fields
         foreach ($this->additionalFields as $fieldName) {
             if (array_key_exists($fieldName, $record['context'])) {
-                $contentArray[$fieldName] = $record['context'][$fieldName];
+                if (is_array($record['context'][$fieldName])) {
+                    $contentArray[$fieldName] = json_encode($record['context'][$fieldName]);
+                } else {
+                    $contentArray[$fieldName] = $record['context'][$fieldName];
+                }
             }
         }
 
